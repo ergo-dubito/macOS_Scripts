@@ -1,0 +1,8 @@
+#!/bin/sh
+## Relaunch BitBar
+
+#Killthe bitbar app now
+killall BitBarDistro
+echo "BitBar app killed"
+
+exit 0
