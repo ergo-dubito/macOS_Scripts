@@ -63,7 +63,7 @@ ADBound=$(dsconfigad -show | awk '/Active Directory Domain/{print $NF}')
 ####### Functions #######
 
 function adCheck() {
-ping -c 1 bauer-uk.bauermedia.group &> /dev/null
+ping -c1 -W5 -q bauer-uk.bauermedia.group &> /dev/null
   if [[ "$?" != "0" ]]; then
     echo "Mac not connected to corporate network"
     exit 1
