@@ -59,16 +59,17 @@ hostName=`/usr/local/jamf/bin/jamf getComputerName | sed -E 's/^[^>]+>//;s/<[^>]
 casper_admins="E746DA41-F686-4F95-8DA6-BD639CE88CF2"
 casper_superusers="06966C02-B63E-4814-ACF6-E150CCCE92D7"
 ADBound=$(dsconfigad -show | awk '/Active Directory Domain/{print $NF}')
+Domain="bauer-uk.bauermedia.group"
 
 ####### Functions #######
 
 function adCheck() {
 ping -c1 -W5 -q bauer-uk.bauermedia.group &> /dev/null
   if [[ "$?" != "0" ]]; then
-    echo "Mac not connected to corporate network"
+    echo "$Domain is not reachable"
     exit 1
   else
-    echo "Mac connected to corporate network"
+    echo "$Domain is reachable"
 fi
 }
 
