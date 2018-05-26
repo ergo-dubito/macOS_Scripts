@@ -130,6 +130,6 @@ echo "Local Items Keychain:$LocalKeychain"
 
 timeMachineCheck
 
-shutdown -r +2
+shutdown -r +1
 
 exit 0
