@@ -90,7 +90,7 @@ else
       checkLocalKeychain
   else
   		echo "Backup is recent, keychain can be restored from a Time Machine backup if required"
-      rm -f "${UserHomeDirectory}/Library/Keychains/$CurrentLoginKeychain"
+      rm -f ${UserHomeDirectory}/Library/Keychains/"$CurrentLoginKeychain"
       rm -Rf ${UserHomeDirectory}/Library/Keychains/"$LocalKeychain"
       echo "Login and Local Items Keychain deleted, Mac will now reboot to complete the process"
   fi
