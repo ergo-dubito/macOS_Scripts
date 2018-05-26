@@ -97,7 +97,7 @@ else
 fi
 }
 
-# Quit apps command
+#Quit all open apps
 read -r -d '' OSASCRIPT_COMMAND <<EOD
 set white_list to {"Finder","Self Service","Terminal"}
 tell application "Finder"
