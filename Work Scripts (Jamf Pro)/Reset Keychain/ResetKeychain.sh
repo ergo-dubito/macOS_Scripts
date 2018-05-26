@@ -90,10 +90,25 @@ else
       checkLocalKeychain
   else
   		echo "Backup is recent, keychain can be restored from a Time Machine backup if required"
-      rm -f ${UserHomeDirectory}/Library/Keychains/"$CurrentLoginKeychain"
-      rm -Rf ${UserHomeDirectory}/Library/Keychains/"$LocalKeychain"
+      rm -f ${UserHomeDirectory}/Library/Keychains/"$CurrentLoginKeychain" 2>/dev/null
+      rm -Rf ${UserHomeDirectory}/Library/Keychains/"$LocalKeychain" 2>/dev/null
+      rm -Rf ${UserHomeDirectory}/Library/Keychains/"$HardwareUUID" 2>/dev/null
       echo "Login and Local Items Keychain deleted, Mac will now reboot to complete the process"
   fi
+fi
+}
+
+function confirmKeychainDeletion() {
+#Get the current user's default (login) keychain to check deletion
+CurrentLoginKeychain=$(su "${LoggedInUser}" -c "security list-keychains" | grep login | sed -e 's/\"//g' | sed -e 's/\// /g' | awk '{print $NF}')
+#Get the Local Items Keychain to check deletion
+LocalKeychain=$(ls "${UserHomeDirectory}"/Library/Keychains/ | egrep '([A-Z0-9]{8})((-)([A-Z0-9]{4})){3}(-)([A-Z0-9]{12})' | head -n 1)
+
+if [[ -z "$CurrentLoginKeychain" ]] && [[ ! -d "$LocalKeychain" ]]; then
+    echo "Login & Local Items Keychains deleted successfully, this Mac will now reboot to complete the process"
+else
+  echo "Keychain reset FAILED"
+  exit 1
 fi
 }
 
@@ -129,6 +144,8 @@ echo "Local Items Keychain:$LocalKeychain"
 /usr/bin/osascript -e "${OSASCRIPT_COMMAND}"
 
 timeMachineCheck
+
+confirmKeychainDeletion
 
 shutdown -r +1
 
