@@ -23,7 +23,7 @@ CurrentLoginKeychain=$(su "${LoggedInUser}" -c "security list-keychains" | grep 
 HardwareUUID=$(system_profiler SPHardwareDataType | grep 'Hardware UUID' | awk '{print $3}')
 
 #Local Items Keychain
-LocalKeychain=$(ls "${UserHomeDirectory}"/Library/Keychains/ | egrep '([A-Z0-9]{8})((-)([A-Z0-9]{4})){3}(-)([A-Z0-9]{12})')
+LocalKeychain=$(ls "${UserHomeDirectory}"/Library/Keychains/ | egrep '([A-Z0-9]{8})((-)([A-Z0-9]{4})){3}(-)([A-Z0-9]{12})' | head -n 1)
 
 #Keychain Backup Directory
 KeychainBackup="${UserHomeDirectory}/Library/Keychains/KeychainBackup"
@@ -91,8 +91,8 @@ else
   else
   		echo "Backup is recent, keychain can be restored from a Time Machine backup if required"
       rm -f "${UserHomeDirectory}/Library/Keychains/$CurrentLoginKeychain"
-      rm -Rf "${UserHomeDirectory}/Library/Keychains/$LocalKeychain"
-      echo "Login and Local Keychain deleted, Mac will now reboot to complete the process"
+      rm -Rf ${UserHomeDirectory}/Library/Keychains/"$LocalKeychain"
+      echo "Login and Local Items Keychain deleted, Mac will now reboot to complete the process"
   fi
 fi
 }
