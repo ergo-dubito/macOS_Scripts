@@ -99,9 +99,9 @@ fi
 }
 
 function confirmKeychainDeletion() {
-#Get the current user's default (login) keychain to check deletion
+#repopulate login keychina variable
 CurrentLoginKeychain=$(su "${LoggedInUser}" -c "security list-keychains" | grep login | sed -e 's/\"//g' | sed -e 's/\// /g' | awk '{print $NF}')
-#Get the Local Items Keychain to check deletion
+#repopulate local items keychain variable
 LocalKeychain=$(ls "${UserHomeDirectory}"/Library/Keychains/ | egrep '([A-Z0-9]{8})((-)([A-Z0-9]{4})){3}(-)([A-Z0-9]{12})' | head -n 1)
 
 if [[ -z "$CurrentLoginKeychain" ]] && [[ ! -d "$LocalKeychain" ]]; then
