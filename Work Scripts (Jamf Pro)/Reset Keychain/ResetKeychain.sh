@@ -39,7 +39,7 @@ function createBackupDirectory() {
 #Create a directory to store the previous Local and Login Keychain so that it can be restored
 if [[ ! -d "$KeychainBackup" ]]; then
   mkdir "$KeychainBackup"
-  chown $LoggedInUser:staff "$KeychainBackup"
+  chown $LoggedInUser:"BAUER-UK\Domain Users" "$KeychainBackup"
   chmod 755 "$KeychainBackup"
 else
     rm -Rf "$KeychainBackup"/*
@@ -77,7 +77,7 @@ function timeMachineCheck ()
 BackupPartition=`diskutil list | grep "Backup" | awk '{ print $3 }'`
 BackupContent=$(ls -A /Volumes/Backup/ 2>/dev/null | grep "Backups.backupdb")
 #Check the Backup modification date
-DATE=`date | awk '{print $2,$3,$4}'`
+DATE=`date | awk '{print $2,$3,$6}'`
 BackupDate=`ls -l /Volumes/Backup/Backups.backupdb/* 2>/dev/null | grep "Latest" | awk '{print $6,$7,$11}' | sed 's/-.*//'`
 
 if [[ "$BackupPartition" == Backup && "$BackupContent" != Backups.backupdb ]]; then
@@ -104,7 +104,7 @@ fi
 }
 
 function confirmKeychainDeletion() {
-#repopulate login keychina variable
+#repopulate login keychain variable
 CurrentLoginKeychain=$(su "${LoggedInUser}" -c "security list-keychains" | grep login | sed -e 's/\"//g' | sed -e 's/\// /g' | awk '{print $NF}')
 #repopulate local items keychain variable
 LocalKeychain=$(ls "${UserHomeDirectory}"/Library/Keychains/ | egrep '([A-Z0-9]{8})((-)([A-Z0-9]{4})){3}(-)([A-Z0-9]{12})' | head -n 1)
@@ -120,25 +120,35 @@ fi
 #JamfHelper message advising that running this will delete all saved passwords
 function jamfHelper_ResetKeychain ()
 {
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Applications/Utilities/Keychain\ Access/Contents/Resources/AppIcon.icns -title "Message from Bauer IT" -heading "Reset Keychain" -description "Please save all of your work and then select the reset button to close all currently open apps.
 
-Your Keychain will then be reset.
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Applications/Utilities/Keychain\ Access.app/Contents/Resources/AppIcon.icns -title "Message from Bauer IT" -heading "Reset Keychain" -description "Please save all of your work
+
+Once saved select the reset button to close all currently open apps
+
+Your Keychain will then be reset
 
 ❗️All passwords currently stored in your Keychain will be deleted" -button1 "Reset" -button2 "Cancel" -defaultButton 1 -cancelButton 2
+
 }
 
 #JamfHelper message to advise that they have cancelled the request
 function jamfHelper_Cancelled ()
 {
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertStopIcon.icns -title "Message from Bauer IT" -heading "Reset Keychain" -description "Request cancelled.
 
-Nothing has been deleted." -button1 "Ok" -defaultButton 1
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/ToolbarDeleteIcon.icns" -title "Message from Bauer IT" -heading "Reset Keychain" -description "Request cancelled
+
+Nothing has been deleted" -button1 "Ok" -defaultButton 1
+
 }
 
 #JamfHelper message to confirm the cache has been deleted
 function jamfHelper_KeychainReset ()
 {
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/UnlockedIcon.icns -title "Message from Bauer IT" -heading "Reset Keychain" -description "Your Keychain has now been reset, your Mac will now reboot to complete the process" -button1 "Ok" -defaultButton 1
+su - $LoggedInUser <<'jamfHelper1'
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Applications/Utilities/Keychain\ Access.app/Contents/Resources/AppIcon.icns -title "Message from Bauer IT" -heading "Reset Keychain" -description "Your Keychain has now been reset
+
+Your Mac will now reboot to complete the process" &
+jamfHelper1
 }
 
 #Quit all open apps
@@ -183,10 +193,12 @@ fi
 
 timeMachineCheck
 
-confirmKeychainDeletion
-
 jamfHelper_KeychainReset
 
-shutdown -r +1
+sleep 10
+
+killall jamfHelper
+
+shutdown -r now
 
 exit 0
