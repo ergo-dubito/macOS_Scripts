@@ -117,6 +117,30 @@ else
 fi
 }
 
+#JamfHelper message advising that running this will delete all saved passwords
+function jamfHelper_ResetKeychain ()
+{
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Applications/Utilities/Keychain\ Access/Contents/Resources/AppIcon.icns -title "Message from Bauer IT" -heading "Reset Keychain" -description "Please save all of your work and then select the reset button to close all currently open apps.
+
+Your Keychain will then be reset.
+
+❗️All passwords currently stored in your Keychain will be deleted" -button1 "Reset" -button2 "Cancel" -defaultButton 1 -cancelButton 2
+}
+
+#JamfHelper message to advise that they have cancelled the request
+function jamfHelper_Cancelled ()
+{
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/AlertStopIcon.icns -title "Message from Bauer IT" -heading "Reset Keychain" -description "Request cancelled.
+
+Nothing has been deleted." -button1 "Ok" -defaultButton 1
+}
+
+#JamfHelper message to confirm the cache has been deleted
+function jamfHelper_KeychainReset ()
+{
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/UnlockedIcon.icns -title "Message from Bauer IT" -heading "Reset Keychain" -description "Your Keychain has now been reset, your Mac will now reboot to complete the process" -button1 "Ok" -defaultButton 1
+}
+
 #Quit all open apps
 read -r -d '' OSASCRIPT_COMMAND <<EOD
 set white_list to {"Finder","Self Service","Terminal"}
@@ -146,11 +170,22 @@ echo "Default Login Keychain: $CurrentLoginKeychain"
 echo "Hardware UUID: $HardwareUUID"
 echo "Local Items Keychain:$LocalKeychain"
 
+jamfHelper_ResetKeychain 2>/dev/null
+if [[ "$?" != "0" ]]; then
+	echo "User selected Cancel, Keychain will not be reset"
+		jamfHelper_Cancelled
+		exit 1
+else
+  echo "User selected Reset, resetting Keychain..."
+fi
+
 /usr/bin/osascript -e "${OSASCRIPT_COMMAND}"
 
 timeMachineCheck
 
 confirmKeychainDeletion
+
+jamfHelper_KeychainReset
 
 shutdown -r +1
 
