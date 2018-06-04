@@ -121,9 +121,7 @@ fi
 function jamfHelper_ResetKeychain ()
 {
 
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Applications/Utilities/Keychain\ Access.app/Contents/Resources/AppIcon.icns -title "Message from Bauer IT" -heading "Reset Keychain" -description "Please save all of your work
-
-Once saved select the reset button to close all currently open apps
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Applications/Utilities/Keychain\ Access.app/Contents/Resources/AppIcon.icns -title "Message from Bauer IT" -heading "Reset Keychain" -description "Please save all of your work, once saved select the reset button to close all currently open apps
 
 Your Keychain will then be reset
 
