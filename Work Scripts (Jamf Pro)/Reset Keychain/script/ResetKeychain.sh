@@ -20,7 +20,7 @@ UserHomeDirectory=$(/usr/bin/dscl . -read Users/"${LoggedInUser}" NFSHomeDirecto
 CurrentLoginKeychain=$(su "${LoggedInUser}" -c "security list-keychains" | grep login | sed -e 's/\"//g' | sed -e 's/\// /g' | awk '{print $NF}')
 
 #Check Pre-Sierra Login Keychain
-loginKeychain="${UserHomeDirectory}"/Library/Keychains/login.keychain
+loginKeychain="${UserHomeDirectory}"/Library/Keychains/login.keychain 2>/dev/null
 
 #Hardware UUID
 HardwareUUID=$(system_profiler SPHardwareDataType | grep 'Hardware UUID' | awk '{print $3}')
@@ -49,7 +49,7 @@ fi
 function loginKeychain() {
 #Check the login default keychain and move it to the backup directory if required
 if [[ -z "$CurrentLoginKeychain" ]]; then
-  echo "Deafult Login keychain not found"
+  echo "Default Login keychain not found"
 else
   echo "Login Keychain found and now being moved to the backup location..."
   mv "${UserHomeDirectory}/Library/Keychains/$CurrentLoginKeychain" "$KeychainBackup"
