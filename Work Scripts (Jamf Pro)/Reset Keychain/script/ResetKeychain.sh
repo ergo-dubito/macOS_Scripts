@@ -49,7 +49,7 @@ fi
 function loginKeychain() {
 #Check the login default keychain and move it to the backup directory if required
 if [[ -z "$CurrentLoginKeychain" ]]; then
-  echo "Default Login keychain not found, nothing to delete or back up"
+  echo "Default Login keychain not found, nothing to delete or backup"
 else
   echo "Login Keychain found and now being moved to the backup location..."
   mv "${UserHomeDirectory}/Library/Keychains/$CurrentLoginKeychain" "$KeychainBackup"
@@ -67,7 +67,7 @@ elif [[ "$LocalKeychain" != "$HardwareUUID" ]]; then
   echo "Local Keychain found but does not match Hardware UUID so must have been restored, backing up Local Items Keychain..."
   mv "${UserHomeDirectory}/Library/Keychains/$LocalKeychain" "$KeychainBackup"
 else
-  echo "Local Keychain not found, nothing to back up or delete"
+  echo "Local Keychain not found, nothing to backup or delete"
 fi
 }
 
