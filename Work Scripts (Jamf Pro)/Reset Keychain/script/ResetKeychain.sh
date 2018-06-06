@@ -49,7 +49,7 @@ fi
 function loginKeychain() {
 #Check the login default keychain and move it to the backup directory if required
 if [[ -z "$CurrentLoginKeychain" ]]; then
-  echo "Default Login keychain not found"
+  echo "Default Login keychain not found, nothing to delete or back up"
 else
   echo "Login Keychain found and now being moved to the backup location..."
   mv "${UserHomeDirectory}/Library/Keychains/$CurrentLoginKeychain" "$KeychainBackup"
@@ -67,7 +67,7 @@ elif [[ "$LocalKeychain" != "$HardwareUUID" ]]; then
   echo "Local Keychain found but does not match Hardware UUID so must have been restored, backing up Local Items Keychain..."
   mv "${UserHomeDirectory}/Library/Keychains/$LocalKeychain" "$KeychainBackup"
 else
-  echo "Local Keychain not found so nothing to back up"
+  echo "Local Keychain not found so nothing to delete or back up"
 fi
 }
 
@@ -93,12 +93,11 @@ else
       loginKeychain
       checkLocalKeychain
   else
-  		echo "Backup is recent, keychain can be restored from a Time Machine backup if required"
+  		echo "Backup is recent, keychain now being deleted but can be restored from a Time Machine backup if required at a later date"
       rm -f ${UserHomeDirectory}/Library/Keychains/"$CurrentLoginKeychain" 2>/dev/null
       rm -f "$loginKeychain" 2>/dev/null
       rm -Rf ${UserHomeDirectory}/Library/Keychains/"$LocalKeychain" 2>/dev/null
       rm -Rf ${UserHomeDirectory}/Library/Keychains/"$HardwareUUID" 2>/dev/null
-      echo "Login and Local Items Keychain deleted, Mac will now reboot to complete the process"
   fi
 fi
 }
@@ -168,6 +167,7 @@ else
 fi
 
 #Quit all open Apps
+echo "Killing all open applications for $LoggedInUser"
 killall -u $LoggedInUser
 
 timeMachineCheck

@@ -122,7 +122,9 @@ else
     else
       echo "User selected Reset, resetting Keychain..."
       #close all open apps
+      echo "Killing all open applications for $LoggedInUser"
       killall -u $LoggedInUser
+      echo "Deleting Login and Local Keychains..."
       deleteLoginKeychain
       deleteLocalKeychain
     fi
