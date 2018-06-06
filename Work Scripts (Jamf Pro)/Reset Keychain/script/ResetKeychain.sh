@@ -14,7 +14,7 @@ LoggedInUser=`python -c 'from SystemConfiguration import SCDynamicStoreCopyConso
 echo "Current user is $LoggedInUser"
 
 #Get the current user's home directory
-UserHomeDirectory=$(/usr/bin/dscl . -read Users/"${LoggedInUser}" NFSHomeDirectory | awk '{print $2}')
+UserHomeDirectory=$(/usr/bin/dscl . -read /Users/"${LoggedInUser}" NFSHomeDirectory | awk '{print $2}')
 
 #Get the current user's default (login) keychain
 CurrentLoginKeychain=$(su "${LoggedInUser}" -c "security list-keychains" | grep login | sed -e 's/\"//g' | sed -e 's/\// /g' | awk '{print $NF}')
