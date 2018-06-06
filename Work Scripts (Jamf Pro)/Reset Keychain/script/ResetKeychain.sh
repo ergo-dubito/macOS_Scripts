@@ -67,7 +67,7 @@ elif [[ "$LocalKeychain" != "$HardwareUUID" ]]; then
   echo "Local Keychain found but does not match Hardware UUID so must have been restored, backing up Local Items Keychain..."
   mv "${UserHomeDirectory}/Library/Keychains/$LocalKeychain" "$KeychainBackup"
 else
-  echo "Local Keychain not found so nothing to delete or back up"
+  echo "Local Keychain not found, nothing to back up or delete"
 fi
 }
 
@@ -155,7 +155,7 @@ jamfHelper1
 
 echo "Default Login Keychain: $CurrentLoginKeychain"
 echo "Hardware UUID: $HardwareUUID"
-echo "Local Items Keychain:$LocalKeychain"
+echo "Local Items Keychain: $LocalKeychain"
 
 jamfHelper_ResetKeychain 2>/dev/null
 if [[ "$?" != "0" ]]; then
@@ -170,6 +170,7 @@ fi
 echo "Killing all open applications for $LoggedInUser"
 killall -u $LoggedInUser
 
+echo "Checking for a recent Time Machine backup..."
 timeMachineCheck
 
 jamfHelper_KeychainReset
