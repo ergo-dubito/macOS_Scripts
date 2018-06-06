@@ -121,9 +121,9 @@ fi
 function jamfHelper_ResetKeychain ()
 {
 
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Applications/Utilities/Keychain\ Access.app/Contents/Resources/AppIcon.icns -title "Message from Bauer IT" -heading "Reset Keychain" -description "Please save all of your work, once saved select the reset button to close all currently open apps
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Applications/Utilities/Keychain\ Access.app/Contents/Resources/AppIcon.icns -title "Message from Bauer IT" -heading "Reset Keychain" -description "Please save all of your work, once saved select the reset button
 
-Your Keychain will then be reset
+Your Keychain will then be reset and your Mac will reboot
 
 ❗️All passwords currently stored in your Keychain will be deleted" -button1 "Reset" -button2 "Cancel" -defaultButton 1 -cancelButton 2
 
@@ -149,26 +149,6 @@ Your Mac will now reboot to complete the process" &
 jamfHelper1
 }
 
-#Quit all open apps
-read -r -d '' OSASCRIPT_COMMAND <<EOD
-set white_list to {"Finder","Self Service","Terminal"}
-tell application "Finder"
-	set process_list to the name of every process whose visible is true
-end tell
-repeat with i from 1 to (number of items in process_list)
-	set this_process to item i of the process_list
-	if this_process is not in white_list then
-		try
-			tell application this_process
-				quit saving yes
-			end tell
-		on error
-			# do nothing
-		end try
-	end if
-end repeat
-EOD
-
 
 ##########################
 ### script starts here ###
@@ -187,7 +167,8 @@ else
   echo "User selected Reset, resetting Keychain..."
 fi
 
-/usr/bin/osascript -e "${OSASCRIPT_COMMAND}"
+#Quit all open Apps
+killall -u $LoggedInUser
 
 timeMachineCheck
 
