@@ -172,6 +172,8 @@ killall -u $LoggedInUser
 
 echo "Checking for a recent Time Machine backup..."
 timeMachineCheck
+echo "Checking Keychain has been successfully reset"
+confirmKeychainDeletion
 
 jamfHelper_KeychainReset
 
