@@ -168,6 +168,8 @@ fi
 
 #Quit all open Apps
 echo "Killing all open applications for $LoggedInUser"
+#Close all office apps to avoid Microsoft Error Reporting
+ps -ef | grep Microsoft | grep -v grep | awk '{print $2}' | xargs kill -9
 killall -u $LoggedInUser
 
 echo "Checking for a recent Time Machine backup..."
