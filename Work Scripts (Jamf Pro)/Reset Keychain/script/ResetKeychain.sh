@@ -102,29 +102,15 @@ else
 fi
 }
 
-function confirmKeychainDeletion() {
-#repopulate login keychain variable
-CurrentLoginKeychain=$(su "${LoggedInUser}" -c "security list-keychains" | grep login | sed -e 's/\"//g' | sed -e 's/\// /g' | awk '{print $NF}')
-#repopulate local items keychain variable
-LocalKeychain=$(ls "${UserHomeDirectory}"/Library/Keychains/ | egrep '([A-Z0-9]{8})((-)([A-Z0-9]{4})){3}(-)([A-Z0-9]{12})' | head -n 1)
-
-if [[ -z "$CurrentLoginKeychain" ]] && [[ ! -d "$LocalKeychain" ]]; then
-    echo "Login & Local Items Keychains deleted or moved successfully, this Mac will now reboot to complete the process"
-else
-  echo "Keychain reset FAILED"
-  exit 1
-fi
-}
-
 #JamfHelper message advising that running this will delete all saved passwords
 function jamfHelper_ResetKeychain ()
 {
 
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Applications/Utilities/Keychain\ Access.app/Contents/Resources/AppIcon.icns -title "Message from Bauer IT" -heading "Reset Keychain" -description "Please save all of your work, once saved select the reset button
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Applications/Utilities/Keychain\ Access.app/Contents/Resources/AppIcon.icns -title "Message from Bauer IT" -heading "Reset Keychain" -description "Please save all of your work, once saved select the Reset button
 
 Your Keychain will then be reset and your Mac will reboot
 
-❗️All passwords currently stored in your Keychain will be deleted" -button1 "Reset" -button2 "Cancel" -defaultButton 1 -cancelButton 2
+❗️All passwords currently stored in your Keychain will need to be entered again after the reset has completed" -button1 "Reset" -button2 "Cancel" -defaultButton 1 -cancelButton 2
 
 }
 
@@ -134,11 +120,11 @@ function jamfHelper_Cancelled ()
 
 /Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/ToolbarDeleteIcon.icns" -title "Message from Bauer IT" -heading "Reset Keychain" -description "Request cancelled
 
-Nothing has been deleted" -button1 "Ok" -defaultButton 1
+Your Keychain has not been reset" -button1 "Ok" -defaultButton 1
 
 }
 
-#JamfHelper message to confirm the cache has been deleted
+#JamfHelper message to confirm the keychain has been reset and the Mac is about to restart
 function jamfHelper_KeychainReset ()
 {
 su - $LoggedInUser <<'jamfHelper1'
@@ -148,6 +134,34 @@ Your Mac will now reboot to complete the process" &
 jamfHelper1
 }
 
+#JamfHelper message to advise the customer the reset has failed
+function jamfHelperKeychainResetFailed ()
+{
+su - $LoggedInUser <<'jamfHelper_keychainresetfailed'
+/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon /Applications/Utilities/Keychain\ Access.app/Contents/Resources/AppIcon.icns -title 'Message from Bauer IT' -heading 'Keychain Reset Failed' -description 'It looks like something went wrong when trying to reset your keychain.
+
+Please contact the IT Service Desk
+
+0345 058 4444
+
+' -button1 "Ok" -defaultButton 1
+jamfHelper_keychainresetfailed
+}
+
+function confirmKeychainDeletion() {
+#repopulate login keychain variable
+CurrentLoginKeychain=$(su "${LoggedInUser}" -c "security list-keychains" | grep login | sed -e 's/\"//g' | sed -e 's/\// /g' | awk '{print $NF}')
+#repopulate local items keychain variable
+#LocalKeychain=$(ls "${UserHomeDirectory}"/Library/Keychains/ | egrep '([A-Z0-9]{8})((-)([A-Z0-9]{4})){3}(-)([A-Z0-9]{12})' | head -n 1)
+
+if [[ -z "$CurrentLoginKeychain" ]]; then
+    echo "Keychain deleted or moved successfully, this Mac will now reboot to complete the process"
+else
+  echo "Keychain reset FAILED"
+  jamfHelperKeychainResetFailed
+  exit 1
+fi
+}
 
 ##########################
 ### script starts here ###
@@ -167,19 +181,26 @@ else
 fi
 
 #Quit all open Apps
+<<<<<<< HEAD
+echo "Killing all Microsoft Apps to avoid MS Error Reporting launching"
+ps -ef | grep Microsoft | grep -v grep | awk '{print $2}' | xargs kill -9
+echo "Killing all other open applications for $LoggedInUser"
+=======
 echo "Killing all open applications for $LoggedInUser"
 #Close all office apps to avoid Microsoft Error Reporting
 ps -ef | grep Microsoft | grep -v grep | awk '{print $2}' | xargs kill -9
+>>>>>>> 121b56a8addd90637cac22c5154998c78d6c9cb7
 killall -u $LoggedInUser
 
 echo "Checking for a recent Time Machine backup..."
 timeMachineCheck
+
 echo "Checking Keychain has been successfully reset"
 confirmKeychainDeletion
 
 jamfHelper_KeychainReset
 
-sleep 10
+sleep 5
 
 killall jamfHelper
 

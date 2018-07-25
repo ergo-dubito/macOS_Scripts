@@ -1,5 +1,19 @@
 #!/bin/sh
 
+##############################################
+########## Add Bauer Search Domains ##########
+########### Written by Phil Walker ###########
+##############################################
+
+###################
+#### Variables ####
+###################
+
+#Identify Hardware
+MacModel=`ioreg -rd1 -c IOPlatformExpertDevice | awk -F'["|"]' '/model/{print $4}' | sed 's/[0-9]*//g;s/,//g'`
+#Identify current network service
+currentservice=$(networksetup -listallhardwareports | grep -C1 $(route get default | grep interface | awk '{print $2}') | grep "Hardware Port" | sed 's/Hardware Port: //')
+
 #Get the IP
 theLoc=`ifconfig | awk '/inet[^6]/{split($2,ip,".");theip=ip[1] "." ip[2] ".";$0=theip}
 
@@ -23,60 +37,59 @@ else
 	DNSSuffix=""
 fi
 
-# Identify Hardware
+###################
+#### Functions ####
+###################
 
-MacModel=`ioreg -rd1 -c IOPlatformExpertDevice | awk -F'["|"]' '/model/{print $4}' | sed 's/[0-9]*//g;s/,//g'`
 
-echo "Mac model : $MacModel with the location of $theLoc"
-
-function checkEthernetDomainsMacPro() {
+function EthernetDomainsMacPro() {
 
 DomainsEthernet1=`/usr/sbin/networksetup -getsearchdomains "Ethernet 1" | grep "bauer" | wc -l`
 DomainsEthernet2=`/usr/sbin/networksetup -getsearchdomains "Ethernet 2" | grep "bauer" | wc -l `
 if [[ $DomainsEthernet1 -eq "2" ]] && [[ $DomainsEthernet2 -eq "2" ]]; then
-	  echo "$MacModel Ethernet Search Domains correct, nothing to add"
+	  echo "Ethernet 1 and Ethernet 2 interface search domains correct, nothing to add"
 else
-  echo "Adding Search Domains for interfaces Ethernet 1 and Ethernet 2 on $MacModel"
+  echo "Adding search domains for Ethernet 1 and Ethernet 2 interfaces"
   /usr/sbin/networksetup -setsearchdomains "Ethernet 1" $DNSSuffix bauer-uk.bauermedia.group
   /usr/sbin/networksetup -setsearchdomains "Ethernet 2" $DNSSuffix bauer-uk.bauermedia.group
 fi
 
 }
 
-function checkEthernetDomains() {
+function currentServiceDomains() {
 
-DomainsEthernet=`/usr/sbin/networksetup -getsearchdomains "Ethernet" | grep "bauer" | wc -l`
-if [[ "$DomainsEthernet" -eq "2" ]]; then
-  echo "$MacModel Ethernet Search Domains correct, nothing to add"
+DomainsCurrentService=`/usr/sbin/networksetup -getsearchdomains "$currentservice" | grep "bauer" | wc -l`
+if [[ "$DomainsCurrentService" -eq "2" ]]; then
+  echo "$currentservice interface search domains correct, nothing to add"
 else
-  echo "Adding Search Domains for Ethernet interface on $MacModel"
-  /usr/sbin/networksetup -setsearchdomains "Ethernet" $DNSSuffix bauer-uk.bauermedia.group
+  echo "Adding search domains for $currentservice interface"
+  /usr/sbin/networksetup -setsearchdomains "$currentservice" $DNSSuffix bauer-uk.bauermedia.group
 fi
 
 }
 
-function checkWiFiDomains() {
+function wifiDomains() {
 
 DomainsWiFi=`/usr/sbin/networksetup -getsearchdomains "Wi-Fi" | grep "bauer" | wc -l`
 if [[ "$DomainsWiFi" -eq "2" ]]; then
-  echo "$MacModel Wifi Search Domains correct, nothing to add"
+  echo "Wi-Fi interface search domains correct, nothing to add"
 else
-  echo "Adding Search Domains for Wi-Fi interface on $MacModel"
+  echo "Adding search domains for Wi-Fi interface"
   /usr/sbin/networksetup -setsearchdomains "Wi-Fi" $DNSSuffix bauer-uk.bauermedia.group
 fi
 
 }
 
-function confirmDomainsMP() {
+function confirmDomainsMacPro() {
 
 DomainsEthernet1=`/usr/sbin/networksetup -getsearchdomains "Ethernet 1" | grep "bauer" | wc -l`
 DomainsEthernet2=`/usr/sbin/networksetup -getsearchdomains "Ethernet 2" | grep "bauer" | wc -l`
 
 if [[ $MacModel = "MacPro" ]]; then
   if [[ $DomainsEthernet1 -eq "2" ]] && [[ $DomainsEthernet2 -eq "2" ]]; then
-    echo "$MacModel Ethernet Search Domains added successfully"
+    echo "Ethernet interfaces search domains added successfully"
 else
-    echo "$MacModel Ethernet Search Domains not added"
+    echo "Ethernet interfaces search domains not added"
     exit 1
   fi
 fi
@@ -84,53 +97,66 @@ fi
 }
 
 
-function confirmDomainsMBA() {
+function confirmWiFiDomains() {
 
 DomainsWiFi=`/usr/sbin/networksetup -getsearchdomains "Wi-Fi" | grep "bauer" | wc -l`
 
-if [[ $MacModel = "MacBookAir" ]]; then
-  if [[ $DomainsWiFi -eq "2" ]]; then
-    echo "$MacModel Wifi Search Domains added successfully"
+if [[ $DomainsWiFi -eq "2" ]]; then
+    echo "Wi-Fi interface search domains set correctly"
 else
-    echo "$MacModel Wifi Search Domains not added"
-    exit 1
-  fi
-fi
-
-}
-
-function confirmDomains() {
-
-DomainsWiFi=`/usr/sbin/networksetup -getsearchdomains "Wi-Fi" | grep "bauer" | wc -l`
-DomainsEthernet=`/usr/sbin/networksetup -getsearchdomains "Ethernet" | grep "bauer" | wc -l`
-
-if [[ $DomainsWiFi -eq "2" ]] && [[ $DomainsEthernet -eq "2" ]]; then
-    echo "Search Domains Correct"
-else
-    echo "Search Domains not added"
+    echo "Wi-Fi interface search domains not added"
     exit 1
 fi
 
 }
 
+function confirmCurrentServiceDomains() {
 
-if [[ $MacModel = "MacPro" ]]; then
+DomainsEthernet=`/usr/sbin/networksetup -getsearchdomains "$currentservice" | grep "bauer" | wc -l`
 
-    checkEthernetDomainsMacPro
-    confirmDomainsMP
-
-elif [[ $MacModel = "MacBookAir" ]]; then
-
-    checkWiFiDomains
-    confirmDomainsMBA
-
+if [[ $DomainsEthernet -eq "2" ]]; then
+	echo "Ethernet interface search domains set correctly"
 else
-  # For all other models i.e iMac, MacBook Pro and Mac Mini
-
-    checkWiFiDomains
-    checkEthernetDomains
-    confirmDomains
+		echo "Ethernet interface search domains not added"
+	  exit 1
 fi
 
+}
+
+##########################
+### script starts here ###
+##########################
+
+echo "Mac model: $MacModel with the location of $theLoc"
+echo "Network Connected via $currentservice"
+
+if [[ $MacModel = *"MacBook"* ]] && [[ "$currentservice" = *"Ethernet"* ]]; then
+	currentServiceDomains
+	wifiDomains
+	echo "Search domains being double checked..."
+	confirmCurrentServiceDomains
+	confirmWiFiDomains
+
+elif [[ $MacModel = *"MacBook"* ]] && [[ "$currentservice" = *"Wi-Fi"* ]]; then
+
+	wifiDomains
+	echo "Search domains being double checked..."
+  confirmWiFiDomains
+
+
+elif [[ $MacModel = "MacPro" ]]; then
+
+	EthernetDomainsMacPro
+	echo "Search domains being double checked..."
+  confirmDomainsMacPro
+
+else
+  # For all other models i.e iMac and Mac Mini
+
+  currentServiceDomains
+	echo "Search domains being double checked..."
+  confirmCurrentServiceDomains
+
+fi
 
 exit 0
