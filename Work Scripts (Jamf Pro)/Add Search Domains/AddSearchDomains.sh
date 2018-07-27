@@ -21,7 +21,7 @@ theLoc=`ifconfig | awk '/inet[^6]/{split($2,ip,".");theip=ip[1] "." ip[2] ".";$0
 	$0 == "10.3."	{print "London"}
 	$0 == "10.101."	{print "London"}
 	$0 == "10.102."	{print "London"}
-	$0 == "172.26."	{print "Londondon"}
+	$0 == "172.26."	{print "London"}
 
 	$0 == "10.96."  {print "Peterborough"}
 	$0 == "10.116."	{print "Peterborough"}
