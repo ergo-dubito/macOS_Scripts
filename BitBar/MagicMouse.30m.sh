@@ -10,12 +10,15 @@
 
 MM=$(ioreg -n BNBMouseDevice | grep "BatteryPercent" | grep -F -v \{ | sed 's/[^[:digit:]]//g')
 MM2=$(system_profiler SPBluetoothDataType | grep -A 6 "Magic Mouse 2" | grep "Battery Level" | awk '{print $3}' | sed 's/%//g')
-CHARGE=$(system_profiler SPUSBDataType | grep "Magic Mouse 2" | sed 's/://g' 2>/dev/null | wc -l)
+MM2CONNECT=$(system_profiler SPBluetoothDataType | grep -A 6 "Magic Mouse 2" | grep "Connected" | sed 's/Connected: //')
+CHARGE=$(system_profiler SPBluetoothDataType | grep -A 6 "Magic Mouse 2" | grep "Battery Level")
 
 function chargeStatus() {
 #display lightning icon if Magic Mouse 2 is charging
-if [ $CHARGE -gt 0 ]; then
-  echo "🖱⚡️"
+if [[ $CHARGE == "" ]] && [[ $MM2CONNECT == "No" ]]; then
+  echo "⌨️⚡️"
+else
+  echo "🖱"
 fi
 }
 
@@ -29,9 +32,9 @@ if [ $MM ]; then
   fi
 elif [ $MM2 ]; then
   if [ $MM2 -le 20 ]; then
-    echo "🖱$MM2% | color=red"
+    echo "$MM2% | color=red"
   else
-    echo "🖱$MM2%"
+    echo "$MM2%"
   fi
 fi
 }
