@@ -1,4 +1,4 @@
-0#!/bin/bash
+#!/bin/bash
 # <bitbar.title>Apple Magic Keyboard battery</bitbar.title>
 # <bitbar.version>1.0</bitbar.version>
 # <bitbar.author>Phil Walker</bitbar.author>
@@ -10,17 +10,6 @@
 
 MK=$(ioreg -c AppleBluetoothHIDKeyboard | grep "BatteryPercent" | grep -F -v \{ | sed 's/[^[:digit:]]//g')
 MK2=$(system_profiler SPBluetoothDataType | grep -A 6 "Magic Keyboard" | grep "Battery Level" | awk '{print $3}' | sed 's/%//g')
-MK2CONNECT=$(system_profiler SPBluetoothDataType | grep -A 6 "Magic Keyboard" | grep "Connected" | sed 's/Connected: //')
-CHARGE=$(system_profiler SPBluetoothDataType | grep -A 6 "Magic Keyboard" | grep "Battery Level")
-
-function chargeStatus() {
-#display lightning icon if Magic Keyboard 2 is charging
-if [[ $CHARGE == "" ]] && [[ $MK2CONNECT == "No" ]]; then
-  echo "⌨️⚡️"
-else
-  echo "⌨️"
-fi
-}
 
 function magicKeyboard() {
 #Magic Keyboard Battery Percentage
@@ -32,9 +21,9 @@ function magicKeyboard() {
     fi
 elif [ $MK2 ]; then
     if [ $MK2 -le 20 ]; then
-      echo "$MK2% | color=red"
+      echo "⌨️$MK2% | color=red"
     else
-      echo "$MK2%"
+      echo "⌨️$MK2%"
     fi
 fi
 }
@@ -50,6 +39,6 @@ elif [ $MK2 -le 10 ]; then
 fi
 }
 
-echo "$(chargeStatus)$(magicKeyboard)"
+echo "$(magicKeyboard)"
 echo "---"
 echo "$(chargeRequired)"
