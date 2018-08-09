@@ -86,12 +86,12 @@ if [[ "$BackupPartition" != "Backup" ]]; then
     checkLocalKeychain
 
 elif [[ "$BackupPartition" == "Backup" ]] && [[ "$DATE" != "$BackupDate" ]]; then
-    echo "Latest backup completed $BackupDate, KeychainBackup directory will be created..."
+    echo "Backup partition found but TM backup is not recent (Latest Backup:$BackupDate), KeychainBackup directory will be created..."
     createBackupDirectory
     loginKeychain
     checkLocalKeychain
 else
-  	echo "TM backup is recent ($BackupDate), keychain now being deleted but can be restored from a Time Machine backup if required at a later date"
+  	echo "TM backup is recent (Latest Backup:$BackupDate), keychain now being deleted but can be restored from a Time Machine backup if required at a later date"
     rm -f ${UserHomeDirectory}/Library/Keychains/"$CurrentLoginKeychain" 2>/dev/null
     rm -f "$loginKeychain" 2>/dev/null
     rm -Rf ${UserHomeDirectory}/Library/Keychains/"$LocalKeychain" 2>/dev/null
