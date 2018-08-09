@@ -181,15 +181,9 @@ else
 fi
 
 #Quit all open Apps
-<<<<<<< HEAD
 echo "Killing all Microsoft Apps to avoid MS Error Reporting launching"
 ps -ef | grep Microsoft | grep -v grep | awk '{print $2}' | xargs kill -9
 echo "Killing all other open applications for $LoggedInUser"
-=======
-echo "Killing all open applications for $LoggedInUser"
-#Close all office apps to avoid Microsoft Error Reporting
-ps -ef | grep Microsoft | grep -v grep | awk '{print $2}' | xargs kill -9
->>>>>>> 121b56a8addd90637cac22c5154998c78d6c9cb7
 killall -u $LoggedInUser
 
 echo "Checking for a recent Time Machine backup..."
@@ -203,7 +197,5 @@ jamfHelper_KeychainReset
 sleep 5
 
 killall jamfHelper
-
-shutdown -r now
 
 exit 0
