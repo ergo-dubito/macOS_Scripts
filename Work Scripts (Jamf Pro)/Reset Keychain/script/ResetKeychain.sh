@@ -73,32 +73,29 @@ fi
 
 function timeMachineCheck ()
 {
-#Check if Backup partition is present and not empty
-BackupPartition=`diskutil list | grep "Backup" | awk '{ print $3 }'`
-BackupContent=$(ls -A /Volumes/Backup/ 2>/dev/null | grep "Backups.backupdb")
-#Check the Backup modification date
+#Check if the Backup partition is present and if so has TM completed a backup today
+BackupPartition=`diskutil list | grep "Backup" | awk '{ print $3 }' | head -n 1`
 DATE=`date | awk '{print $2,$3,$6}'`
 BackupDate=`ls -l /Volumes/Backup/Backups.backupdb/* 2>/dev/null | grep "Latest" | awk '{print $6,$7,$11}' | sed 's/-.*//'`
 
-if [[ "$BackupPartition" == Backup && "$BackupContent" != Backups.backupdb ]]; then
-        echo "No Backup DB found, KeychainBackup directory will be created..."
-        createBackupDirectory
-        loginKeychain
-        checkLocalKeychain
+if [[ "$BackupPartition" != "Backup" ]]; then
+    echo "Backup partition could not be found.."
+    echo "A KeychainBackup directory will be created..."
+    createBackupDirectory
+    loginKeychain
+    checkLocalKeychain
+
+elif [[ "$BackupPartition" == "Backup" ]] && [[ "$DATE" != "$BackupDate" ]]; then
+    echo "Latest backup completed $BackupDate, KeychainBackup directory will be created..."
+    createBackupDirectory
+    loginKeychain
+    checkLocalKeychain
 else
-  echo "Backup DB found, checking there is a recent backup..."
-  if [[ "$DATE" != "$BackupDate" ]]; then
-  		echo "Backup is not recent, KeychainBackup directory will be created..."
-      createBackupDirectory
-      loginKeychain
-      checkLocalKeychain
-  else
-  		echo "Backup is recent, keychain now being deleted but can be restored from a Time Machine backup if required at a later date"
-      rm -f ${UserHomeDirectory}/Library/Keychains/"$CurrentLoginKeychain" 2>/dev/null
-      rm -f "$loginKeychain" 2>/dev/null
-      rm -Rf ${UserHomeDirectory}/Library/Keychains/"$LocalKeychain" 2>/dev/null
-      rm -Rf ${UserHomeDirectory}/Library/Keychains/"$HardwareUUID" 2>/dev/null
-  fi
+  	echo "TM backup is recent ($BackupDate), keychain now being deleted but can be restored from a Time Machine backup if required at a later date"
+    rm -f ${UserHomeDirectory}/Library/Keychains/"$CurrentLoginKeychain" 2>/dev/null
+    rm -f "$loginKeychain" 2>/dev/null
+    rm -Rf ${UserHomeDirectory}/Library/Keychains/"$LocalKeychain" 2>/dev/null
+    rm -Rf ${UserHomeDirectory}/Library/Keychains/"$HardwareUUID" 2>/dev/null
 fi
 }
 
@@ -149,13 +146,11 @@ jamfHelper_keychainresetfailed
 }
 
 function confirmKeychainDeletion() {
-#repopulate login keychain variable
+#repopulate login keychain variable (Only the login keychain is checked post deletion as the local items keychain is sometimes recreated too quickly)
 CurrentLoginKeychain=$(su "${LoggedInUser}" -c "security list-keychains" | grep login | sed -e 's/\"//g' | sed -e 's/\// /g' | awk '{print $NF}')
-#repopulate local items keychain variable
-#LocalKeychain=$(ls "${UserHomeDirectory}"/Library/Keychains/ | egrep '([A-Z0-9]{8})((-)([A-Z0-9]{4})){3}(-)([A-Z0-9]{12})' | head -n 1)
 
 if [[ -z "$CurrentLoginKeychain" ]]; then
-    echo "Keychain deleted or moved successfully, this Mac will now reboot to complete the process"
+    echo "Keychain deleted or moved successfully. A reboot is required to complete the process"
 else
   echo "Keychain reset FAILED"
   jamfHelperKeychainResetFailed
