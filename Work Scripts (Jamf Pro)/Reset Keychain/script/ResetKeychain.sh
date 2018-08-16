@@ -112,19 +112,10 @@ function jamfHelper_ResetKeychain ()
 
 Your Keychain will then be reset and your Mac will reboot
 
-❗️All passwords currently stored in your Keychain will need to be entered again after the reset has completed" -button1 "Reset" -button2 "Cancel" -defaultButton 1 -cancelButton 2
+❗️All passwords currently stored in your Keychain will need to be entered again after the reset has completed" -button1 "Reset" -defaultButton 1
 
 }
 
-#JamfHelper message to advise that they have cancelled the request
-function jamfHelper_Cancelled ()
-{
-
-/Library/Application\ Support/JAMF/bin/jamfHelper.app/Contents/MacOS/jamfHelper -windowType utility -icon "/System/Library/CoreServices/CoreTypes.bundle/Contents/Resources/ToolbarDeleteIcon.icns" -title "Message from Bauer IT" -heading "Reset Keychain" -description "Request cancelled
-
-Your Keychain has not been reset" -button1 "Ok" -defaultButton 1
-
-}
 
 #JamfHelper message to confirm the keychain has been reset and the Mac is about to restart
 function jamfHelper_KeychainReset ()
@@ -171,14 +162,7 @@ echo "Default Login Keychain: $CurrentLoginKeychain"
 echo "Hardware UUID: $HardwareUUID"
 echo "Local Items Keychain: $LocalKeychain"
 
-jamfHelper_ResetKeychain 2>/dev/null
-if [[ "$?" != "0" ]]; then
-	echo "User selected Cancel, Keychain will not be reset"
-		jamfHelper_Cancelled
-		exit 1
-else
-  echo "User selected Reset, resetting Keychain..."
-fi
+jamfHelper_ResetKeychain
 
 #Quit all open Apps
 echo "Killing all Microsoft Apps to avoid MS Error Reporting launching"
